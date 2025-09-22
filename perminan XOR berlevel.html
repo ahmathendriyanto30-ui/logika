@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tantangan XOR Interaktif</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+    background: #f0f2f5;
+  }
+
+  h2 { text-align: center; color: #333; }
+
+  .status {
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  .container {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap; /* responsif untuk layar kecil */
+    margin-bottom: 20px;
+  }
+
+  .grid-wrapper { text-align: center; }
+
+  .grid-wrapper p { margin: 0; font-weight: bold; color: #555; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 60px);
+    grid-template-rows: repeat(3, 60px);
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .cell {
+    width: 60px;
+    height: 60px;
+    background-color: black;
+    border-radius: 5px;
+    border: 1px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .cell.white {
+    background-color: white;
+    color: black;
+  }
+
+  .cell:hover {
+    transform: scale(1.05);
+  }
+
+  #message {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  button {
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+
+  #footer {
+    margin-top: 30px;
+    text-align: center;
+    color: #555;
+    font-size: 14px;
+  }
+
+  @media (max-width: 700px) {
+    .container { flex-direction: column; gap: 20px; }
+  }
+</style>
+</head>
+<body>
+<h2>Interaktif Ekpresi logika XOR</h2>
+
+<div class="status">
+  Level: <span id="level">1</span> | Skor: <span id="score">0</span>
+</div>
+
+<div class="container">
+  <div class="grid-wrapper">
+    <p>Grid A</p>
+    <div class="grid" id="gridA"></div>
+  </div>
+  <div class="grid-wrapper">
+    <p>Grid B</p>
+    <div class="grid" id="gridB"></div>
+  </div>
+  <div class="grid-wrapper">
+    <p>Isi Hasil XOR</p>
+    <div class="grid" id="result"></div>
+  </div>
+</div>
+
+<div id="message">Klik kotak pada grid hasil XOR untuk mengubah 0 → 1, lalu cek jawaban.</div>
+
+<div>
+  <button id="prev">Level Sebelumnya</button>
+  <button id="check">Cek Jawaban</button>
+  <button id="next">Level Berikutnya</button>
+</div>
+
+<div id="footer">
+  Dibuat oleh: EeNk_HeNdRy
+</div>
+
+<script>
+let level = 1;
+let score = 0;
+
+// Inisialisasi grid
+function createGrid(gridId, editable=false) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = "";
+  for(let i=0;i<9;i++){
+    const val = 0;
+    const cell = document.createElement('div');
+    cell.classList.add('cell');
+    cell.dataset.value = val;
+    cell.textContent = val;
+    if(editable){
+      cell.addEventListener('click', () => toggleCell(cell));
+    }
+    grid.appendChild(cell);
+  }
+}
+
+// Generate grid A dan B acak
+function generateAB() {
+  const gridA = document.getElementById('gridA');
+  const gridB = document.getElementById('gridB');
+  for(let i=0;i<9;i++){
+    const valA = Math.random() < 0.5 ? 1 : 0;
+    const valB = Math.random() < 0.5 ? 1 : 0;
+
+    gridA.children[i].dataset.value = valA;
+    gridA.children[i].textContent = valA;
+    gridA.children[i].classList.toggle('white', valA===1);
+
+    gridB.children[i].dataset.value = valB;
+    gridB.children[i].textContent = valB;
+    gridB.children[i].classList.toggle('white', valB===1);
+  }
+}
+
+// Toggle hasil XOR
+function toggleCell(cell) {
+  if(cell.dataset.value === "0") {
+    cell.dataset.value = "1";
+    cell.classList.add("white");
+    cell.textContent = "1";
+  } else {
+    cell.dataset.value = "0";
+    cell.classList.remove("white");
+    cell.textContent = "0";
+  }
+}
+
+// Cek jawaban
+function checkAnswer() {
+  const gridA = document.querySelectorAll('#gridA .cell');
+  const gridB = document.querySelectorAll('#gridB .cell');
+  const result = document.querySelectorAll('#result .cell');
+  let correct = true;
+
+  for(let i=0;i<9;i++){
+    const xor = parseInt(gridA[i].dataset.value) ^ parseInt(gridB[i].dataset.value);
+    if(parseInt(result[i].dataset.value) !== xor){
+      correct = false;
+      break;
+    }
+  }
+
+  const message = document.getElementById('message');
+  if(correct){
+    const points = 10;
+    score += points;
+    document.getElementById('score').textContent = score;
+    message.textContent = `🎉 Benar! Skor +${points}. Klik Level Berikutnya untuk target baru.`;
+  } else {
+    message.textContent = "❌ Masih salah. Periksa kembali grid hasil XOR!";
+  }
+}
+
+// Level berikutnya
+function nextLevel() {
+  level++;
+  document.getElementById('level').textContent = level;
+  createGrid('result', true);
+  generateAB();
+  document.getElementById('message').textContent = "Klik kotak pada grid hasil XOR untuk mengubah 0 → 1, lalu cek jawaban.";
+}
+
+// Level sebelumnya
+function prevLevel() {
+  if(level > 1){
+    level--;
+    document.getElementById('level').textContent = level;
+    createGrid('result', true);
+    generateAB();
+    document.getElementById('message').textContent = "Klik kotak pada grid hasil XOR untuk mengubah 0 → 1, lalu cek jawaban.";
+  } else {
+    document.getElementById('message').textContent = "Ini sudah level pertama!";
+  }
+}
+
+// Inisialisasi awal
+createGrid('gridA');
+createGrid('gridB');
+createGrid('result', true);
+generateAB();
+
+// Event tombol
+document.getElementById('check').addEventListener('click', checkAnswer);
+document.getElementById('next').addEventListener('click', nextLevel);
+document.getElementById('prev').addEventListener('click', prevLevel);
+</script>
+</body>
+</html>
